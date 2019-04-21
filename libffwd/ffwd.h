@@ -91,8 +91,8 @@ struct server_args{
 	"if cat /proc/cpuinfo | grep -q 'Opteron' ; then \
 		echo Opteron; \
 	else \
-		if cat /proc/cpuinfo | grep -q 'Xeon' ; then \
-			echo Xeon; \
+		if cat /proc/cpuinfo | grep -q 'Intel' ; then \
+			echo Intel; \
 		else \
 			echo not supported; \
 		fi; \

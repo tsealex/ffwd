@@ -194,7 +194,7 @@ void ffwd_thread_create(pthread_t *thread, pthread_attr_t *client_attr, void *(*
 		context->id = cores[((global_id/cores_per_socket)*2) + ((1-num_sockets*2)*((global_id/cores_per_socket)/(num_sockets)))][global_id%cores_per_socket];
 	#endif
 
-	if(!strcmp(platform, "Xeon")){
+	if(!strcmp(platform, "Intel")){
 		my_chip = context->id/cores_per_socket - (context->id/(cores_per_socket * MAX_SOCK)) * MAX_SOCK;
 		id_in_chip = (context->id % cores_per_socket)*2 + (context->id/(cores_per_socket * MAX_SOCK)) - INDEX_DIFF;
 	}
@@ -247,6 +247,7 @@ void ffwd_bind_main_thread(){
 	int my_chip = 0;
 	int i;
 	struct request* myrequest[MAX_NUM_OF_SERVERS];
+	printf(cores_per_socket);
 
 	// skip the first core in each chip (for server purpose)
 	if (global_id == (cores_per_socket-1) || global_id == (cores_per_socket*2)-1 || global_id == (cores_per_socket*3)-1 || global_id == (cores_per_socket*4)-1 || global_id == (cores_per_socket*5)-1 || global_id == (cores_per_socket*6)-1 || global_id == (cores_per_socket*7)-1 ){
@@ -260,7 +261,7 @@ void ffwd_bind_main_thread(){
 		context->id = cores[((global_id/cores_per_socket)*2) + ((1-num_sockets*2)*((global_id/cores_per_socket)/(num_sockets)))][global_id%cores_per_socket];
 	#endif
 
-	if(!strcmp(platform, "Xeon")){
+	if(!strcmp(platform, "Intel")){
 		my_chip = context->id/cores_per_socket - (context->id/(cores_per_socket * MAX_SOCK)) * MAX_SOCK;
 		id_in_chip = (context->id % cores_per_socket) * 2 + (context->id/(cores_per_socket * MAX_SOCK)) - INDEX_DIFF;
 	}
@@ -339,10 +340,13 @@ static void initialize_core_ordering(){
         perror("popen");
 
     while(fgets(text, 1024, file)) {
-        for(i=0, p = strtok_r(text, " ", &saveptr); p && strlen(p); p = strtok_r(0, " ", &saveptr))
+        for(i=0, p = strtok_r(text, " ", &saveptr); p && strlen(p); p = strtok_r(0, " ", &saveptr)) {
+//            printf(p);
             i++;
+        }
         total_sockets++;
         all_threads += i;
+        printf("%d %d\n", total_sockets, all_threads);
     }
 
     if(!(file = popen(FIND_PLATFORM, "r")))
@@ -350,22 +354,25 @@ static void initialize_core_ordering(){
 
      while(fgets(text, 1024, file)) {
         p = strtok_r(text, "\n", &saveptr);
-     	if (!strcmp(p, "Xeon")){
-    		platform = "Xeon";
+        printf("%s", p);
+     	if (!strcmp(p, "Intel")){
+    		platform = "Intel";
     	}
     	else if (!strcmp(p, "Opteron")){
     		platform = "Opteron";
     	}
     	else {
-    		printf("Only XEON and Opteron platforms are supported! \n");
+    		printf("Only Intel and Opteron platforms are supported! \n");
     		//TODO check this one
     		exit(-1);
     	}
     }
-
+//    printf("%d,%d,%d,%d\n", all_threads, total_sockets, num_sockets, total_sockets/2);
     cores_per_socket = all_threads / total_sockets;
-    num_sockets = total_sockets/ 2;
+//    cores_per_socket = 5;
+    num_sockets = total_sockets;
 	active_threads_per_socket = all_threads / num_sockets;
+//    active_threads_per_socket = 5;
 
 	cores = (int**) malloc(sizeof(int*) * total_sockets);
 	for(i=0; i<total_sockets; i++){
@@ -385,7 +392,7 @@ static void initialize_core_ordering(){
 	num_threads = all_threads;
 	active_threads_per_socket -= (active_threads_per_socket/cores_per_socket);
 
-	// printf("Running on %s with %d sockets and %d threads\n", platform, num_sockets, num_threads);
+	 printf("Running on %s with %d sockets and %d threads\n", platform, num_sockets, num_threads);
 
 }
 

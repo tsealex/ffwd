@@ -36,7 +36,7 @@ uint64_t increment (int a){
 }
 
 void* client(void *input_data){
-	
+	printf("ok");
 	data* mydata = (data *) input_data;
 	mydata->ops = 0;
 
@@ -68,7 +68,6 @@ int main (int argc, char ** argv){
 	if(numa_available() < 0){
         printf("System does not support NUMA API!\n");
     }
-
 	int c, i;
 	while((c = getopt(argc, argv, "t:s:d:")) != -1){
 		switch (c)
@@ -103,7 +102,6 @@ int main (int argc, char ** argv){
 	timeout.tv_sec = duration / 1000;
 	timeout.tv_nsec = (duration % 1000) * 1000000;
 	stop = 0;
-	
 	ffwd_init();
 	launch_servers(4);
 
